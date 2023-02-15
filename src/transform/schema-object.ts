@@ -51,13 +51,28 @@ export function defaultSchemaObjectTransform(
 
   // $ref
   if ("$ref" in schemaObject) {
-    return schemaObject.$ref;
+    const genericValue = ctx.mode ? `'${ctx.mode}'` : "TMode";
+    return schemaObject.$ref.replace(/^(\w+)/, `$1<${genericValue}>`);
   }
 
   // transform()
   if (typeof ctx.transform === "function") {
     const result = ctx.transform(schemaObject, { path, ctx });
     if (result) return result;
+  }
+
+  if (schemaObject.readOnly) {
+    return `TMode extends 'write' ? undefined : ${defaultSchemaObjectTransform(
+      { ...schemaObject, readOnly: undefined },
+      { path, ctx }
+    )}`;
+  }
+
+  if (schemaObject.writeOnly) {
+    return `TMode extends 'read' ? undefined : ${defaultSchemaObjectTransform(
+      { ...schemaObject, writeOnly: undefined },
+      { path, ctx }
+    )}`;
   }
 
   // const (valid for any type)

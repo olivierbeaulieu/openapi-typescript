@@ -46,7 +46,7 @@ export default function transformResponseObject(
           indent(
             `${key}: ${transformHeaderObject(headerObject, {
               path: `${path}/headers/${name}`,
-              ctx: { ...ctx, indentLv },
+              ctx: { ...ctx, indentLv, mode: "read" },
             })};`,
             indentLv
           )
@@ -70,7 +70,7 @@ export default function transformResponseObject(
         indent(
           `${key}: ${transformMediaTypeObject(mediaTypeObject, {
             path: `${path}/content/${contentType}`,
-            ctx: { ...ctx, indentLv: indentLv },
+            ctx: { ...ctx, indentLv: indentLv, mode: "read" },
           })};`,
           indentLv
         )

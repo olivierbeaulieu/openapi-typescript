@@ -642,6 +642,7 @@ export interface GlobalContext {
   pathParamsAsTypes: boolean;
   silent: boolean;
   supportArrayLength: boolean;
+  mode?: "read" | "write";
 }
 
 // Fetch is available in the global scope starting with Node v18.

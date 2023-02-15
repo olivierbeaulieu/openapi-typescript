@@ -100,14 +100,17 @@ async function openapiTS(
 
   // 2c. root schema
   const rootTypes = transformSchema(allSchemas["."].schema as OpenAPI3, ctx);
+  const genericParams = `<TMode extends 'read' | 'write' | 'none' = 'none'>`;
   for (const k of Object.keys(rootTypes)) {
     if (rootTypes[k] && !EMPTY_OBJECT_RE.test(rootTypes[k])) {
       output.push(
-        options.exportType ? `export type ${k} = ${rootTypes[k]};` : `export interface ${k} ${rootTypes[k]}`,
+        options.exportType
+          ? `export type ${k}${genericParams} = ${rootTypes[k]};`
+          : `export interface ${k}${genericParams} ${rootTypes[k]}`,
         ""
       );
     } else {
-      output.push(`export type ${k} = Record<string, never>;`, "");
+      output.push(`export type ${k}${genericParams} = Record<string, never>;`, "");
     }
     delete rootTypes[k];
     delete allSchemas["."]; // garbage collect, but also remove from next step (external)

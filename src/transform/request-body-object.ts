@@ -28,7 +28,7 @@ export default function transformRequestBodyObject(
         indent(
           `${key}: ${transformSchemaObject(mediaTypeObject, {
             path: `${path}/${contentType}`,
-            ctx: { ...ctx, indentLv },
+            ctx: { ...ctx, indentLv, mode: "write" },
           })};`,
           indentLv
         )
@@ -36,7 +36,7 @@ export default function transformRequestBodyObject(
     } else {
       const mediaType = transformMediaTypeObject(mediaTypeObject, {
         path: `${path}/${contentType}`,
-        ctx: { ...ctx, indentLv },
+        ctx: { ...ctx, indentLv, mode: "write" },
       });
       output.push(indent(`${key}: ${mediaType};`, indentLv));
     }
