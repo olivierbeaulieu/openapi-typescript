@@ -525,6 +525,127 @@ export type external = Record<string, never>;
 export type operations = Record<string, never>;
 `);
     });
+    
+    test("anyOf nested in oneOf", async () => {
+      const schema: OpenAPI3 = {
+        openapi: "3.1",
+        info: { title: "test", version: "1.0" },
+        components: {
+          schemas: {
+            Pet: {
+              oneOf: [
+                { $ref: "#/components/schemas/Cat" },
+                { $ref: "#/components/schemas/Dog" },
+              ],
+              discriminator: {
+                propertyName: "petType",
+                mapping: {
+                  cat: "#/components/schemas/Cat",
+                  dog: "#/components/schemas/Dog",
+                },
+              },
+            },
+            BabyPet: {
+              oneOf: [
+                { $ref: "#/components/schemas/Kitten" },
+                { $ref: "#/components/schemas/Puppy" },
+              ],
+              discriminator: {
+                propertyName: "petType",
+                mapping: {
+                  kitten: "#/components/schemas/Kitten",
+                  puppy: "#/components/schemas/Puppy",
+                },
+              },
+            },
+            Cat: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                petType: { type: "string", enum: ["cat"] },
+                bestFriend: {
+                  allOf: [{ $ref: "#/components/schemas/BabyPet" }],
+                  nullable: true,
+                },
+              },
+              required: ["petType"],
+            },
+            Dog: {
+              type: "object",
+              properties: {
+                bark: { type: "string" },
+                petType: { type: "string", enum: ["dog"] },
+                bestFriend: {
+                  allOf: [{ $ref: "#/components/schemas/BabyPet" }],
+                  nullable: true,
+                },
+              },
+              required: ["petType"],
+            },
+            Kitten: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                petType: { type: "string", enum: ["kitten"] },
+              },
+              required: ["petType"],
+            },
+            Puppy: {
+              type: "object",
+              properties: {
+                bark: { type: "string" },
+                petType: { type: "string", enum: ["puppy"] },
+              },
+              required: ["petType"],
+            },
+          },
+        },
+      };
+      const generated = await openapiTS(schema);
+      expect(generated).toBe(`${BOILERPLATE}
+export type paths = Record<string, never>;
+
+export type webhooks = Record<string, never>;
+
+export interface components {
+  schemas: {
+    Pet: components["schemas"]["Cat"] | components["schemas"]["Dog"];
+    BabyPet: components["schemas"]["Kitten"] | components["schemas"]["Puppy"];
+    Cat: {
+      name?: string;
+      /** @enum {string} */
+      petType: "cat";
+      bestFriend?: components["schemas"]["BabyPet"] | null;
+    };
+    Dog: {
+      bark?: string;
+      /** @enum {string} */
+      petType: "dog";
+      bestFriend?: components["schemas"]["BabyPet"] | null;
+    };
+    Kitten: {
+      name?: string;
+      /** @enum {string} */
+      petType: "kitten";
+    };
+    Puppy: {
+      bark?: string;
+      /** @enum {string} */
+      petType: "puppy";
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
+}
+
+export type external = Record<string, never>;
+
+export type operations = Record<string, never>;
+`);
+    });
 
     test("$ref properties", async () => {
       const schema: OpenAPI3 = {
